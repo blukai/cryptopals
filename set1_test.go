@@ -58,7 +58,7 @@ func charFreqFromFile(path string) CharFrequency {
 	return CalculateCharacterFrequency(string(text))
 }
 
-var cf = charFreqFromFile("testdata/set1c3.txt")
+var cf = charFreqFromFile("testdata/mobydick.txt")
 
 func Test_Challenge3(t *testing.T) {
 	in := decodeHex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", t)
