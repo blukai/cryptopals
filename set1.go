@@ -1,6 +1,7 @@
 package cryptopals
 
 import (
+	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -124,9 +125,9 @@ func GuessRepeatingXORKeySize(in []byte, minKeySize, maxKeySize int) (int, error
 
 // challenge 6
 func BreakRepeatingXORKey(in []byte, keySize int, cf CharFrequency) ([]byte, error) {
-	transposed := make([]byte, len(in)/keySize)
 	key := make([]byte, keySize)
 	for i := 0; i < keySize; i++ {
+		transposed := make([]byte, len(in)/keySize)
 		for j := 0; j < len(in)/keySize; j++ {
 			transposed[j] = in[i+keySize*j]
 		}
@@ -134,4 +135,27 @@ func BreakRepeatingXORKey(in []byte, keySize int, cf CharFrequency) ([]byte, err
 		key[i] = k
 	}
 	return key, nil
+}
+
+// ----
+
+// https://codereview.appspot.com/7860047
+
+// challenge 6
+func DecryptAESECB(in, key []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(in)%block.BlockSize() != 0 {
+		return nil, fmt.Errorf("DecryptECB: input not full blocks")
+	}
+
+	res := make([]byte, len(in))
+	for i := 0; i < len(in); i += block.BlockSize() {
+		block.Decrypt(res[i:], in[i:])
+	}
+
+	return res, nil
 }

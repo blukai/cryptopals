@@ -117,7 +117,7 @@ func Test_Challenge6(t *testing.T) {
 		t.Fatalf("wrong hamming distance: %d", hd)
 	}
 
-	file, err := ioutil.ReadFile("testdata/s1c6.txt")
+	file, err := ioutil.ReadFile("testdata/set1c6.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,8 +131,20 @@ func Test_Challenge6(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("key: %s", string(key))
+	decrypted := RepeatingXOR(in, key)
 
-	// data := RepeatingXOR(in, key)
-	// t.Log(string(data))
+	t.Logf("key: %s\ndecrypted: %s", key, decrypted)
+}
+
+func Test_Challenge7(t *testing.T) {
+	file, err := ioutil.ReadFile("testdata/set1c7.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	decrypted, err := DecryptAESECB(decodeBase64(string(file), t), []byte("YELLOW SUBMARINE"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("decrypted: %s", decrypted)
 }
