@@ -3,6 +3,7 @@ package cryptopals
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/hex"
 	"io/ioutil"
 	"os"
@@ -97,4 +98,41 @@ func Test_Challenge5(t *testing.T) {
 I go crazy when I hear a cymbal`), []byte("ICE"))
 
 	compareBytes(expected, actual, t)
+}
+
+func decodeBase64(str string, t *testing.T) []byte {
+	decoded, err := base64.StdEncoding.DecodeString(str)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return decoded
+}
+
+func Test_Challenge6(t *testing.T) {
+	hd, err := hammingDistance([]byte("this is a test"), []byte("wokka wokka!!!"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hd != 37 {
+		t.Fatalf("wrong hamming distance: %d", hd)
+	}
+
+	file, err := ioutil.ReadFile("testdata/s1c6.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	in := decodeBase64(string(file), t)
+
+	keySize, err := GuessRepeatingXORKeySize(in, 2, 40)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key, err := BreakRepeatingXORKey(in, keySize, cf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("key: %s", string(key))
+
+	// data := RepeatingXOR(in, key)
+	// t.Log(string(data))
 }

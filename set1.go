@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"math"
+	"math/bits"
 	"unicode/utf8"
 )
 
@@ -21,7 +23,7 @@ func HexToBase64(v string) (string, error) {
 // challenge 2
 func XORvsXOR(a, b []byte) ([]byte, error) {
 	if len(a) != len(b) {
-		return nil, fmt.Errorf("len of a and b is not equal")
+		return nil, fmt.Errorf("a and b are not equal length")
 	}
 
 	res := make([]byte, len(a))
@@ -85,4 +87,51 @@ func RepeatingXOR(in, key []byte) []byte {
 		res[i] = in[i] ^ key[i%len(key)]
 	}
 	return res
+}
+
+// ----
+
+func hammingDistance(a, b []byte) (int, error) {
+	if len(a) != len(b) {
+		return 0, fmt.Errorf("a and b are not equal length")
+	}
+	var res int
+	for i := range a {
+		res += bits.OnesCount8(a[i] ^ b[i])
+	}
+	return res, nil
+}
+
+func GuessRepeatingXORKeySize(in []byte, minKeySize, maxKeySize int) (int, error) {
+	var (
+		score = math.MaxFloat64
+		res   int
+	)
+	for ks := minKeySize; ks <= maxKeySize; ks++ {
+		fst, snd := in[:ks*4], in[ks*4:ks*4*2]
+		hd, err := hammingDistance(fst, snd)
+		if err != nil {
+			return 0, err
+		}
+		s := float64(hd) / float64(ks)
+		if s < score {
+			res = ks
+			score = s
+		}
+	}
+	return res, nil
+}
+
+// challenge 6
+func BreakRepeatingXORKey(in []byte, keySize int, cf CharFrequency) ([]byte, error) {
+	transposed := make([]byte, len(in)/keySize)
+	key := make([]byte, keySize)
+	for i := 0; i < keySize; i++ {
+		for j := 0; j < len(in)/keySize; j++ {
+			transposed[j] = in[i+keySize*j]
+		}
+		k, _, _ := BreakSingleByteXOR(transposed, cf)
+		key[i] = k
+	}
+	return key, nil
 }
