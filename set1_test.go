@@ -1,12 +1,11 @@
 package cryptopals
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/hex"
 	"io/ioutil"
-	"os"
+	"strings"
 	"testing"
 )
 
@@ -67,21 +66,17 @@ func Test_Challenge3(t *testing.T) {
 }
 
 func Test_Challenge4(t *testing.T) {
-	file, err := os.Open("testdata/set1c4.txt")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer file.Close()
-
 	var (
 		key   byte
 		val   []byte
 		score float64
 	)
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-	for scanner.Scan() {
-		in := decodeHex(scanner.Text(), t)
+	data, err := ioutil.ReadFile("testdata/set1c4.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, str := range strings.Split(string(data), "\n") {
+		in := decodeHex(str, t)
 		k, v, s := BreakSingleByteXOR(in, cf)
 		if s > score {
 			key = k
@@ -137,14 +132,30 @@ func Test_Challenge6(t *testing.T) {
 }
 
 func Test_Challenge7(t *testing.T) {
-	file, err := ioutil.ReadFile("testdata/set1c7.txt")
+	data, err := ioutil.ReadFile("testdata/set1c7.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
-	decrypted, err := DecryptAESECB(decodeBase64(string(file), t), []byte("YELLOW SUBMARINE"))
+	decrypted, err := DecryptAESECB(decodeBase64(string(data), t), []byte("YELLOW SUBMARINE"))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Logf("decrypted: %s", decrypted)
+}
+
+func Test_Challenge8(t *testing.T) {
+	data, err := ioutil.ReadFile("testdata/set1c8.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for line, str := range strings.Split(string(data), "\n") {
+		isECB, err := IsAESECB(decodeHex(str, t))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if isECB {
+			t.Logf("line %d: %s", line+1, str)
+		}
+	}
 }

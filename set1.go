@@ -149,7 +149,7 @@ func DecryptAESECB(in, key []byte) ([]byte, error) {
 	}
 
 	if len(in)%block.BlockSize() != 0 {
-		return nil, fmt.Errorf("DecryptECB: input not full blocks")
+		return nil, fmt.Errorf("not full blocks")
 	}
 
 	res := make([]byte, len(in))
@@ -158,4 +158,22 @@ func DecryptAESECB(in, key []byte) ([]byte, error) {
 	}
 
 	return res, nil
+}
+
+// ----
+
+func IsAESECB(in []byte) (bool, error) {
+	const bs = 16
+	if len(in)%bs != 0 {
+		return false, fmt.Errorf("not full blocks")
+	}
+	blocks := make(map[string]int)
+	for i := 0; i < len(in); i += bs {
+		val := string(in[i : i+bs])
+		if blocks[val] > 0 {
+			return true, nil
+		}
+		blocks[val]++
+	}
+	return false, nil
 }
